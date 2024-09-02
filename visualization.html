@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi Visualization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+        }
+        h1 {
+            margin: 20px;
+            color: #003c8f;
+            font-size: 36px;
+            font-weight: bold;
+        }
+        .tower-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-end;
+            margin: 0 auto;
+            max-width: 800px;
+            padding: 20px;
+        }
+        .tower {
+            width: 120px;
+            height: 300px;
+            border: 4px solid #0288d1;
+            border-radius: 10px;
+            position: relative;
+            background-color: #e1f5fe;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .disk {
+            height: 20px;
+            background-color: #0277bd;
+            border: 1px solid #01579b;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            text-align: center;
+            line-height: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        #steps {
+            margin-top: 20px;
+            padding: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #0288d1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #0277bd;
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        .tower-label {
+            position: absolute;
+            bottom: -30px;
+            width: 100%;
+            font-size: 18px;
+            font-weight: bold;
+            color: #003c8f;
+        }
+        #successMessage {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #4caf50;
+            color: white;
+            padding: 20px 40px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+    <h1>Tower of Hanoi Visualization</h1>
+    <div class="tower-container">
+        <div class="tower" id="towerA">
+            <div class="tower-label">A</div>
+        </div>
+        <div class="tower" id="towerB">
+            <div class="tower-label">B</div>
+        </div>
+        <div class="tower" id="towerC">
+            <div class="tower-label">C</div>
+        </div>
+    </div>
+    <div id="steps">
+        <button onclick="nextStep()">Next Step</button>
+    </div>
+    <div id="successMessage">Puzzle Completed Successfully!</div>
+    <script>
+        let numDiscs = new URLSearchParams(window.location.search).get('numDiscs');
+        let moves = [];
+        let currentStep = 0;
+
+        function hanoi(n, from, to, aux) {
+            if (n === 1) {
+                moves.push([from, to]);
+                return;
+            }
+            hanoi(n - 1, from, aux, to);
+            moves.push([from, to]);
+            hanoi(n - 1, aux, to, from);
+        }
+
+        function initVisualization() {
+            const towerA = document.getElementById('towerA');
+            const towerB = document.getElementById('towerB');
+            const towerC = document.getElementById('towerC');
+            towerA.innerHTML = '';
+            towerB.innerHTML = '';
+            towerC.innerHTML = '';
+            
+            let bottomOffset = 0;
+
+            for (let i = numDiscs; i > 0; i--) {
+                const disk = document.createElement('div');
+                disk.className = 'disk';
+                disk.style.width = (i * 20) + 'px';
+                disk.textContent = i;
+                disk.style.bottom = bottomOffset + 'px';
+                bottomOffset += 20;
+                towerA.appendChild(disk);
+            }
+
+            hanoi(numDiscs, 'A', 'C', 'B');
+        }
+
+        function moveDiscs() {
+            const towers = {
+                'A': document.getElementById('towerA'),
+                'B': document.getElementById('towerB'),
+                'C': document.getElementById('towerC')
+            };
+
+            if (currentStep < moves.length) {
+                const [src, dst] = moves[currentStep++];
+                const disk = towers[src].lastChild;
+                towers[src].removeChild(disk);
+
+                const numberOfDisks = towers[dst].children.length;
+                const newBottom = numberOfDisks * 20;
+
+                disk.style.bottom = newBottom + 'px';
+                towers[dst].appendChild(disk);
+            } else {
+                document.getElementById('successMessage').style.display = 'block';
+            }
+        }
+
+        function nextStep() {
+            moveDiscs();
+        }
+
+        window.onload = initVisualization;
+    </script>
+</body>
+</html>
